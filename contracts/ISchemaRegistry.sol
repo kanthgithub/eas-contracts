@@ -14,6 +14,12 @@ struct SchemaRecord {
     string schema; // Custom specification of the schema (e.g., an ABI).
 }
 
+struct ClaimType {
+    bytes32 key;
+    bytes32 dataType;
+}
+
+
 /// @title ISchemaRegistry
 /// @notice The interface of global attestation schemas for the Ethereum Attestation Service protocol.
 interface ISchemaRegistry is ISemver {
@@ -28,7 +34,12 @@ interface ISchemaRegistry is ISemver {
     /// @param resolver An optional schema resolver.
     /// @param revocable Whether the schema allows revocations explicitly.
     /// @return The UID of the new schema.
-    function register(string calldata schema, ISchemaResolver resolver, bool revocable) external returns (bytes32);
+    function register(string calldata schema, ClaimType[] calldata claimTypes, ISchemaResolver resolver, bool revocable) external returns (bytes32);
+
+    /// @notice Returns the claims associated with a schema
+    /// @param uid The UID of the schema to retrieve.
+    /// @return The claimTypes associated with the schema.
+    function getSchemaClaims(bytes32 uid) external view returns (ClaimType[] memory);
 
     /// @notice Returns an existing schema by UID
     /// @param uid The UID of the schema to retrieve.

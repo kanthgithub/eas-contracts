@@ -6,7 +6,7 @@ import { ISchemaResolver } from "./resolver/ISchemaResolver.sol";
 
 import { EMPTY_UID } from "./Common.sol";
 import { Semver } from "./Semver.sol";
-import { ISchemaRegistry, SchemaRecord } from "./ISchemaRegistry.sol";
+import { ISchemaRegistry, SchemaRecord, ClaimType } from "./ISchemaRegistry.sol";
 
 /// @title SchemaRegistry
 /// @notice The global schema registry.
@@ -16,11 +16,14 @@ contract SchemaRegistry is ISchemaRegistry, Semver {
     // The global mapping between schema records and their IDs.
     mapping(bytes32 uid => SchemaRecord schemaRecord) private _registry;
 
+    // The global mapping between schema records and their IDs.
+    mapping(bytes32 uid => ClaimType[] claims) private schemaClaims;
+
     /// @dev Creates a new SchemaRegistry instance.
     constructor() Semver(1, 3, 0) {}
 
     /// @inheritdoc ISchemaRegistry
-    function register(string calldata schema, ISchemaResolver resolver, bool revocable) external returns (bytes32) {
+    function register(string calldata schema, ClaimType[] calldata claimTypes, ISchemaResolver resolver, bool revocable) external returns (bytes32) {
         SchemaRecord memory schemaRecord = SchemaRecord({
             uid: EMPTY_UID,
             schema: schema,
@@ -36,6 +39,10 @@ contract SchemaRegistry is ISchemaRegistry, Semver {
         schemaRecord.uid = uid;
         _registry[uid] = schemaRecord;
 
+        for (uint256 i = 0; i < claimTypes.length; i++) {
+            schemaClaims[uid].push(claimTypes[i]);
+        }
+
         emit Registered(uid, msg.sender, schemaRecord);
 
         return uid;
@@ -44,6 +51,11 @@ contract SchemaRegistry is ISchemaRegistry, Semver {
     /// @inheritdoc ISchemaRegistry
     function getSchema(bytes32 uid) external view returns (SchemaRecord memory) {
         return _registry[uid];
+    }
+
+    /// @inheritdoc ISchemaRegistry
+    function getSchemaClaims(bytes32 uid) external view returns (ClaimType[] memory) {
+        return schemaClaims[uid];
     }
 
     /// @dev Calculates a UID for a given schema.

@@ -36,7 +36,7 @@ import {
 } from "./IEAS.sol";
 
 import { Semver } from "./Semver.sol";
-import { ISchemaRegistry, SchemaRecord } from "./ISchemaRegistry.sol";
+import { ISchemaRegistry, SchemaRecord, ClaimType } from "./ISchemaRegistry.sol";
 
 /// @title EAS
 /// @notice The Ethereum Attestation Service protocol.

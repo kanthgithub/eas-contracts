@@ -140,6 +140,9 @@
     "solc": "0.8.19",
     "solhint": "^4.5.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.2",
+    "@prb/test": "^0.6.4",
+    "forge-std": "github:foundry-rs/forge-std#v1.7.5",
+    "ds-test": "github:dapphub/ds-test"
   }
 }

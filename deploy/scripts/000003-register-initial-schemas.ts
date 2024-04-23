@@ -4,6 +4,7 @@ import { ZERO_ADDRESS } from '../../utils/Constants';
 import { execute, InstanceName, setDeploymentMetadata } from '../../utils/Deploy';
 import { getSchemaUID } from '../../utils/EAS';
 import Logger from '../../utils/Logger';
+import { ethers } from 'ethers';
 
 export const SCHEMAS = [
   { schema: 'bytes32 schemaId,string name', name: 'Name a Schema' },
@@ -121,6 +122,37 @@ export const SCHEMAS = [
   { schema: 'bool gm', name: 'GM' }
 ];
 
+
+export declare type ClaimType = {
+  key: string;
+  dataType: string;
+}
+
+export const generateClaimTypes = (schema: string): ClaimType[] => {
+
+  if(!schema) {
+    throw new Error('Schema is required');
+  }
+
+  return schema.split(',').map(item => {
+    const [dataType, key] = item.trim().split(' ');
+
+    //validate for non null, non empty key and datatype
+    if(!key || !dataType) {
+      throw new Error('Key and dataType are required');
+    }
+
+    const bytes32Key = ethers.encodeBytes32String(key);
+    const bytes32DataType = ethers.encodeBytes32String(dataType);
+
+    if (bytes32Key.length !== 66 || bytes32DataType.length !== 66) {
+      throw new Error('Key and dataType must be exactly 32 bytes when encoded');
+    }
+
+    return { key: bytes32Key, dataType: bytes32DataType };
+  });
+};
+
 const func: DeployFunction = async ({ getNamedAccounts }: HardhatRuntimeEnvironment) => {
   const { deployer } = await getNamedAccounts();
 
@@ -128,7 +160,7 @@ const func: DeployFunction = async ({ getNamedAccounts }: HardhatRuntimeEnvironm
     await execute({
       name: InstanceName.SchemaRegistry,
       methodName: 'register',
-      args: [schema, ZERO_ADDRESS, true],
+      args: [schema, generateClaimTypes(schema), ZERO_ADDRESS, true],
       from: deployer
     });
 
